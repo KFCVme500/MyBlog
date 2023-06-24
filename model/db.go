@@ -42,6 +42,7 @@ func InitDb() {
 	if err != nil {
 		fmt.Println("连接数据库失败，请检查参数", err)
 	}
+	fmt.Println("test")
 	//自动创建mysql表格
 	_ = db.AutoMigrate(&User{}, &Article{}, &Category{})
 	/*//禁用默认表名的复数形式，如果设置为true，则User的默认表名是user
