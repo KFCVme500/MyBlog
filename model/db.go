@@ -7,6 +7,8 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 	"gorm.io/gorm/schema"
+	"os"
+	"time"
 )
 
 var db *gorm.DB
@@ -41,23 +43,18 @@ func InitDb() {
 	})
 	if err != nil {
 		fmt.Println("连接数据库失败，请检查参数", err)
+		os.Exit(1)
 	}
-	fmt.Println("test")
 	//自动创建mysql表格
 	_ = db.AutoMigrate(&User{}, &Article{}, &Category{})
-	/*//禁用默认表名的复数形式，如果设置为true，则User的默认表名是user
-	db.SingularTable(true)
-
-	db.AutoMigrate(&User{}, &Article{}, &Category{})
-
+	sqlDB, _ := db.DB()
 	// SetMaxIdleCons 设置连接池中的最大闲置连接数。
-	db.DB().SetMaxIdleConns(10)
+	sqlDB.SetMaxIdleConns(10)
 
 	// SetMaxOpenCons 设置数据库的最大连接数量。
-	db.DB().SetMaxOpenConns(100)
+	sqlDB.SetMaxOpenConns(100)
 
 	// SetConnMaxLifetiment 设置连接的最大可复用时间。
-	db.DB().SetConnMaxLifetime(10 * time.Second)*/
+	sqlDB.SetConnMaxLifetime(10 * time.Second)
 
-	//db.Close()
 }
