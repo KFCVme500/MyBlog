@@ -31,7 +31,7 @@ func InitDb() {
 	)
 	db, err = gorm.Open(mysql.Open(dns), &gorm.Config{
 		// gorm日志模式：silent
-		Logger: logger.Default.LogMode(logger.Silent),
+		Logger: logger.Default.LogMode(logger.Info),
 		// 禁用默认事务（提高运行速度）
 		SkipDefaultTransaction: true,
 		// 外键约束

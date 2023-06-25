@@ -1,7 +1,10 @@
 package model
 
 import (
-	"github.com/jinzhu/gorm"
+	"fmt"
+	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
+	"log"
 	"myBlog/utils/errmsg"
 )
 
@@ -68,6 +71,60 @@ func EditUser(id int, data *User) int {
 	maps["username"] = data.Username
 	maps["role"] = data.Role
 	err = db.Model(&user).Where("id = ?", id).Updates(maps).Error
+	if err != nil {
+		return errmsg.ERROR
+	}
+	return errmsg.SUCCSE
+}
+
+//修改密码
+
+//删除用户
+
+// 密码加密&权限控制
+func (u *User) BeforeCreate(_ *gorm.DB) (err error) {
+	fmt.Println("creat")
+	u.Password = ScryptPw(u.Password)
+	u.Role = 2
+	return nil
+}
+
+func (u *User) BeforeUpdate(_ *gorm.DB) (err error) {
+	u.Password = ScryptPw(u.Password)
+	return nil
+}
+
+// 生成密码
+func ScryptPw(password string) string {
+	const cost = 10
+	HashPw, err := bcrypt.GenerateFromPassword([]byte(password), cost)
+	fmt.Println("test")
+	if err != nil {
+		log.Fatal(err)
+	}
+	return string(HashPw)
+}
+
+// 更新查询
+func CheckUpUser(id int, name string) (code int) {
+	var user User
+	db.Select("id,username").Where("username = ?", name).First(&user)
+	if user.ID == uint(id) {
+		return errmsg.SUCCSE
+	}
+	if user.ID > 0 {
+		return errmsg.ERROR_CATENAME_USED
+	}
+	return errmsg.SUCCSE
+}
+
+func DeleteUser(id int) int {
+	var user User
+	//永久删除
+	err = db.Debug().Unscoped().Where("id = ?", id).Delete(&user).Error
+	//软删除
+	err = db.Debug().Where("id = ?", id).Delete(&user).Error
+	fmt.Println("****************************")
 	if err != nil {
 		return errmsg.ERROR
 	}

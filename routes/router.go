@@ -2,7 +2,6 @@ package routes
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/wejectchen/ginblog/middleware"
 	v2 "myBlog/api/v2"
 	"myBlog/utils"
 )
@@ -11,12 +10,12 @@ func InitRouter() {
 	gin.SetMode(utils.AppMode)
 	r := gin.Default()
 	auth := r.Group("api/v2")
-	auth.Use(middleware.JwtToken())
+	//auth.Use(middleware.JwtToken())
 	{
 		//用户模块的路由接口
 		auth.GET("admin/user")
-		//auth.PUT("user/:id", v2.EditUser)
-		//auth.DELETE("user/:id", v2.DeleteUser)
+		auth.PUT("user/:id", v2.EditUser)
+		auth.DELETE("user/:id", v2.DeleteUser)
 		//分类模块的路由接口
 
 		//文章模块的路由接口
