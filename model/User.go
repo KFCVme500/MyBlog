@@ -79,7 +79,19 @@ func EditUser(id int, data *User) int {
 
 //修改密码
 
-//删除用户
+// 删除用户
+func DeleteUser(id int) int {
+	var user User
+	//永久删除
+	err = db.Debug().Unscoped().Where("id = ?", id).Delete(&user).Error
+	//软删除
+	err = db.Debug().Where("id = ?", id).Delete(&user).Error
+	fmt.Println("****************************")
+	if err != nil {
+		return errmsg.ERROR
+	}
+	return errmsg.SUCCSE
+}
 
 // 密码加密&权限控制
 func (u *User) BeforeCreate(_ *gorm.DB) (err error) {
@@ -118,15 +130,22 @@ func CheckUpUser(id int, name string) (code int) {
 	return errmsg.SUCCSE
 }
 
-func DeleteUser(id int) int {
+// 后台登录验证
+func CheckLogin(username string, password string) (User, int) {
 	var user User
-	//永久删除
-	err = db.Debug().Unscoped().Where("id = ?", id).Delete(&user).Error
-	//软删除
-	err = db.Debug().Where("id = ?", id).Delete(&user).Error
-	fmt.Println("****************************")
-	if err != nil {
-		return errmsg.ERROR
+	var PasswordErr error
+
+	db.Where("username = ?", username).First(&user)
+
+	PasswordErr = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+	if user.ID == 0 {
+		return user, errmsg.ERROR_ART_NOT_EXIST
 	}
-	return errmsg.SUCCSE
+	if PasswordErr != nil {
+		return user, errmsg.ERROR_PASSWORD_WRONG
+	}
+	if user.Role != 1 {
+		return user, errmsg.ERROR_USER_NO_RIGHT
+	}
+	return user, errmsg.SUCCSE
 }
