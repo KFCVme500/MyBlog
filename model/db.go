@@ -46,7 +46,7 @@ func InitDb() {
 		os.Exit(1)
 	}
 	//自动创建mysql表格
-	_ = db.AutoMigrate(&User{}, &Article{}, &Category{})
+	//_ = db.AutoMigrate(&User{}, &Article{}, &Category{})
 	sqlDB, _ := db.DB()
 	// SetMaxIdleCons 设置连接池中的最大闲置连接数。
 	sqlDB.SetMaxIdleConns(10)

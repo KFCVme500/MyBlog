@@ -16,7 +16,7 @@ var Bucket = utils.Bucket
 var ImgUrl = utils.QiniuSever
 
 func UpLoadFile(file multipart.File, fileSize int64) (string, int) {
-	putPolicy := storage.PutPolicy{
+	/*putPolicy := storage.PutPolicy{
 		Scope: Bucket,
 	}
 	mac := qbox.NewMac(AccessKey, SecretKey)
@@ -24,9 +24,9 @@ func UpLoadFile(file multipart.File, fileSize int64) (string, int) {
 	// 该方法生成的过期时间是现对于现在的时间
 	upToken := putPolicy.UploadToken(mac)
 	cfg := setConfig()
-
+	//可选配置
 	putExtra := storage.PutExtra{}
-
+	//表单验证
 	formUploader := storage.NewFormUploader(&cfg)
 	ret := storage.PutRet{}
 
@@ -35,6 +35,26 @@ func UpLoadFile(file multipart.File, fileSize int64) (string, int) {
 		return "", errmsg.ERROR
 	}
 	url := ImgUrl + ret.Key
+	return url, errmsg.SUCCSE*/
+	putPolicy := storage.PutPolicy{
+		Scope: Bucket,
+	}
+	mac := qbox.NewMac(AccessKey, SecretKey)
+	upToken := putPolicy.UploadToken(mac)
+	region, _ := storage.GetRegion(AccessKey, Bucket)
+	cfg := storage.Config{
+		Region:        region,
+		UseCdnDomains: false,
+		UseHTTPS:      false,
+	}
+	putExtra := storage.PutExtra{}
+	formUploader := storage.NewFormUploader(&cfg)
+	ret := storage.PutRet{}
+	err := formUploader.Put(context.Background(), &ret, upToken, "key", file, fileSize, &putExtra)
+	if err != nil {
+		return "", errmsg.ERROR
+	}
+	url := ImgUrl + "/" + ret.Key
 	return url, errmsg.SUCCSE
 }
 

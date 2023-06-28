@@ -1,70 +1,50 @@
-package v2
+package v1
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/wejectchen/ginblog/utils/validator"
 	"myBlog/model"
 	"myBlog/utils/errmsg"
 	"net/http"
 	"strconv"
 )
 
-//查询用户是否存在
-
-// 添加用户
-func AddUser(c *gin.Context) {
-
-	var data model.User
-	var msg string
-	var validCode int
+func AddCategory(c *gin.Context) {
+	var data model.Category
 	_ = c.ShouldBindJSON(&data)
-	//校验器，
-	msg, validCode = validator.Validate(&data)
-	if validCode != errmsg.SUCCSE {
-		c.JSON(
-			http.StatusOK, gin.H{
-				"status":  validCode,
-				"message": msg,
-			},
-		)
-		c.Abort()
-		return
-	}
-	code := model.CheckUser(data.Username)
+	code := model.CheckCategory(data.Name)
 	if code == errmsg.SUCCSE {
-		model.CreateUser(&data)
+		model.CreateCate(&data)
 	}
 
 	c.JSON(
 		http.StatusOK, gin.H{
 			"status":  code,
+			"data":    data,
 			"message": errmsg.GetErrMsg(code),
 		},
 	)
 }
 
-// 查询单个用户
-func GetUserInfo(c *gin.Context) {
+// GetCateInfo 查询分类信息
+func GetCateInfo(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
-	var maps = make(map[string]interface{})
-	data, code := model.GetUser(id)
-	maps["username"] = data.Username
-	maps["role"] = data.Role
+
+	data, code := model.GetCateInfo(id)
+
 	c.JSON(
 		http.StatusOK, gin.H{
 			"status":  code,
-			"data":    maps,
-			"total":   1,
+			"data":    data,
 			"message": errmsg.GetErrMsg(code),
 		},
 	)
+
 }
 
-// 查询用户列表
-func GetUsers(c *gin.Context) {
+// GetCate 查询分类列表
+func GetCate(c *gin.Context) {
 	pageSize, _ := strconv.Atoi(c.Query("pagesize"))
 	pageNum, _ := strconv.Atoi(c.Query("pagenum"))
-	username := c.Query("username")
 
 	switch {
 	case pageSize >= 100:
@@ -72,10 +52,12 @@ func GetUsers(c *gin.Context) {
 	case pageSize <= 0:
 		pageSize = 10
 	}
+
 	if pageNum == 0 {
 		pageNum = 1
 	}
-	data, total := model.GetUsers(username, pageSize, pageNum)
+
+	data, total := model.GetCate(pageSize, pageNum)
 	code := errmsg.SUCCSE
 	c.JSON(
 		http.StatusOK, gin.H{
@@ -87,30 +69,45 @@ func GetUsers(c *gin.Context) {
 	)
 }
 
-// 编辑用户
-func EditUser(c *gin.Context) {
-	var data model.User
+// 查询单个分类
+//func GetCateInfo(c *gin.Context)  {
+//	id, _ := strconv.Atoi(c.Param("id"))
+//
+//	data,code := model.GetCateInfo(id)
+//
+//	c.JSON(http.StatusOK, gin.H{
+//		"status":  code,
+//		"data":    data,
+//		"message": errmsg.GetErrMsg(code),
+//	})
+//}
+
+// EditCate 编辑分类名
+func EditCate(c *gin.Context) {
+	var data model.Category
 	id, _ := strconv.Atoi(c.Param("id"))
 	_ = c.ShouldBindJSON(&data)
-
-	code := model.CheckUpUser(id, data.Username)
+	code := model.CheckCategory(data.Name)
 	if code == errmsg.SUCCSE {
-		model.EditUser(id, &data)
+		model.EditCate(id, &data)
 	}
+	if code == errmsg.ERROR_CATENAME_USED {
+		c.Abort()
+	}
+
 	c.JSON(
 		http.StatusOK, gin.H{
 			"status":  code,
 			"message": errmsg.GetErrMsg(code),
 		},
 	)
-
 }
 
-// 删除用户
-func DeleteUser(c *gin.Context) {
+// DeleteCate 删除用户
+func DeleteCate(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 
-	code := model.DeleteUser(id)
+	code := model.DeleteCate(id)
 
 	c.JSON(
 		http.StatusOK, gin.H{

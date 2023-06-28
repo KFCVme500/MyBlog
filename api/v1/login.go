@@ -1,4 +1,4 @@
-package v2
+package v1
 
 import (
 	"github.com/dgrijalva/jwt-go"
@@ -57,4 +57,18 @@ func setToken(c *gin.Context, user model.User) {
 		"token":   token,
 	})
 	return
+}
+func LoginFront(c *gin.Context) {
+	var formData model.User
+	_ = c.ShouldBindJSON(&formData)
+	var code int
+
+	formData, code = model.CheckLoginFront(formData.Username, formData.Password)
+
+	c.JSON(http.StatusOK, gin.H{
+		"status":  code,
+		"data":    formData.Username,
+		"id":      formData.ID,
+		"message": errmsg.GetErrMsg(code),
+	})
 }
